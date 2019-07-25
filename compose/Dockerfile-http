@@ -1,0 +1,5 @@
+FROM ubuntu:16.04
+
+COPY ./bin greet/bin
+
+CMD greet/bin/http -grpc-address=envoy_http:50051

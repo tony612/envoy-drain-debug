@@ -1,0 +1,82 @@
+version: "3.7"
+services:
+
+  http-server:
+    build:
+      context: .
+      dockerfile: Dockerfile-http
+    networks:
+      envoymesh:
+        aliases:
+          - http_server
+    expose:
+      - "18080"
+
+  envoy-http:
+    build:
+      context: .
+      dockerfile: Dockerfile-envoy
+    volumes:
+      - ./config/envoy-http.yaml:/etc/envoy.yaml
+      - ./envoy-http-data:/opt/mount-data
+    networks:
+      envoymesh:
+        aliases:
+          - envoy_http
+    expose:
+      - "8080"
+      - "50051"
+    ports:
+      - "8080:8080"
+
+  grpc-server-1:
+    build:
+      context: .
+      dockerfile: Dockerfile-grpc
+    hostname: grpc-1
+    networks:
+      envoymesh:
+        aliases:
+          - grpc_1
+
+  grpc-server-2:
+    build:
+      context: .
+      dockerfile: Dockerfile-grpc
+    hostname: grpc-2
+    networks:
+      envoymesh:
+        aliases:
+          - grpc_2
+
+  envoy-1:
+    build:
+      context: .
+      dockerfile: Dockerfile-envoy
+    volumes:
+      - ./config/envoy-grpc-1.yaml:/etc/envoy.yaml
+      - ./envoy-1-data:/opt/mount-data
+    hostname: envoy-1
+    networks:
+      envoymesh:
+        aliases:
+          - grpc_envoy_1
+    expose:
+      - "50051"
+
+  envoy-2:
+    build:
+      context: .
+      dockerfile: Dockerfile-envoy
+    volumes:
+      - ./config/envoy-grpc-2.yaml:/etc/envoy.yaml
+    hostname: envoy-2
+    networks:
+      envoymesh:
+        aliases:
+          - grpc_envoy_2
+    expose:
+      - "50051"
+
+networks:
+  envoymesh: {}
