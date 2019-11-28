@@ -58,20 +58,14 @@ func main() {
 	http.HandleFunc("/grpc", func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), time.Second*600)
 		defer cancel()
-		if rid, ok := r.Header["x-request-id"]; ok {
-			if len(rid) > 0 {
-				ctx = metadata.AppendToOutgoingContext(ctx, "x-request-id", rid[0])
-			}
-		}
-		if rid, ok := r.Header["X-Request-Id"]; ok {
-			if len(rid) > 0 {
-				ctx = metadata.AppendToOutgoingContext(ctx, "x-request-id", rid[0])
-			}
+		rid := r.Header.Get("x-request-id")
+		if len(rid) > 0 {
+			ctx = metadata.AppendToOutgoingContext(ctx, "x-request-id", rid)
 		}
 
 		resp, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
 		if err != nil {
-			log.Println(err)
+			log.Printf("[%s] %v", rid, err.Error())
 			fmt.Fprintf(w, "Got error %v", err.Error())
 		} else {
 			fmt.Fprintf(w, "Hello %v, from http server", resp.Message)
